@@ -24,7 +24,16 @@ $(TARGET): $(OBJECTS)
 %.o: %.c sistem_penjadwalan.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Aturan untuk membersihkan direktori dari file hasil kompilasi
-.PHONY: clean
+# Aturan untuk membersihkan direktori dan menjalankan program
+# .PHONY berarti 'clean' dan 'run' bukan nama file
+.PHONY: clean run  # <--- BARIS INI DIUBAH
+
 clean:
 	rm -f $(OBJECTS) $(TARGET)
+
+# Aturan untuk mengompilasi dan langsung menjalankan program.
+# Karena 'run' bergantung pada '$(TARGET)', 'make' akan memastikan
+# program sudah terkompilasi sebelum mencoba menjalankannya.
+run: $(TARGET)
+	@echo "--- Menjalankan Program ---"
+	./$(TARGET)

@@ -37,7 +37,7 @@ Program ini udah dilengkapi `Makefile`...
 
 2.  **Untuk Kompilasi & Langsung Run**
 
-    Perintah ini akan mengkompilasi (kalau ada perubahan kode) sekaligus langsung menjalankan programnya.
+    Perintah ini akan mengkompilasi (kalau ada perubahan kode) sekaligus menjalankan programnya.
 
     ```bash
     make run
@@ -57,7 +57,7 @@ Ada dua file CSV utama yang digunakan program ini:
 
 ### `daftar_dokter.csv`
 
-Ini file **INPUT** kamu. Jika filenya belum ada, program akan otomatis membuatnya saat kamu menambahkan dokter pertama kali.
+Ini adalah file **INPUT**. Jika filenya belum ada, program akan otomatis membuatnya saat user menambahkan dokter pertama kali.
 
 **Format:**
 `Nama,Max Shift/Minggu,Preferensi Shift`
@@ -71,3 +71,7 @@ dr. Citra,4,Pagi,Malam
 dr. Anisa,5,Siang
 dr. Doni,6,Malam
 dr. Eka,5,Pagi,Siang
+
+### `jadwal.csv`
+
+Ini adalah file **OUTPUT**, jika dibutuhkan user.

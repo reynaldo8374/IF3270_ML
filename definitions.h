@@ -11,18 +11,19 @@
 #define MAX_LINE 100
 #define MAX_HARI 30
 
-// DEFINISI STRUCT
+// DEFINISI STRUCT (versi multi-preferensi)
 typedef struct {
     char nama[50];
     int max_shift;
-    char preferensi[10];
+    int pref_pagi;      // 1 jika preferensi, 0 jika tidak
+    int pref_siang;     // 1 jika preferensi, 0 jika tidak
+    int pref_malam;     // 1 jika preferensi, 0 jika tidak
     int shift_terpakai;
     int pelanggaran;
 } Dokter;
 
 typedef struct {
     char *dokter;
-    char *preferensi;
 } DokterShift;
 
 typedef struct {

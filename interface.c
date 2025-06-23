@@ -1,8 +1,7 @@
-#include "jadwal.h"
-
-// ===========================================
-// UTILITY FUNCTIONS
-// ===========================================
+#include "interface.h"
+#include "dokter_handler.h"
+#include "jadwal_generator.h"
+#include "jadwal_io.h"
 
 void clear_screen() {
     #ifdef _WIN32
@@ -16,17 +15,11 @@ void pause_screen() {
     printf("\nTekan ENTER untuk melanjutkan...");
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
-    // tambahan getchar() untuk menangani buffer dari input sebelumnya
-    if (c == EOF) {
-        // Handle end of file
-    } else {
-       getchar();
+    // Jika ada buffer sisa karena input angka sebelumnya
+    if (c != '\n' && c != EOF) {
+       while (getchar() != '\n' && getchar() != EOF);
     }
 }
-
-// ===========================================
-// MENU HANDLERS
-// ===========================================
 
 void displayMainMenu() {
     printf("==============================================\n");
@@ -58,21 +51,11 @@ void handleDoctorManagement() {
         }
 
         switch (choice) {
-            case 1:
-                tampilkanDaftarDokter();
-                break;
-            case 2:
-                tambahDokterBaru();
-                break;
-            case 3:
-                hapusDokter();
-                break;
-            case 4:
-                break;
-            default:
-                printf("Pilihan tidak valid. Silakan coba lagi.\n");
-                pause_screen();
-                break;
+            case 1: tampilkanDaftarDokter(); break;
+            case 2: tambahDokterBaru(); break;
+            case 3: hapusDokter(); break;
+            case 4: break;
+            default: printf("Pilihan tidak valid.\n"); pause_screen(); break;
         }
     } while (choice != 4);
 }
@@ -98,24 +81,12 @@ void handleScheduleManagement() {
         }
 
         switch (choice) {
-            case 1:
-                buatJadwalOtomatis();
-                break;
-            case 2:
-                handleScheduleView();
-                break;
-            case 3:
-                cetakRingkasanShiftDokter();
-                break;
-            case 4:
-                simpanJadwalKeCSV();
-                break;
-            case 5:
-                break;
-            default:
-                printf("Pilihan tidak valid. Silakan coba lagi.\n");
-                pause_screen();
-                break;
+            case 1: buatJadwalOtomatis(); break;
+            case 2: handleScheduleView(); break;
+            case 3: cetakRingkasanShiftDokter(); break;
+            case 4: simpanJadwalKeCSV(); break;
+            case 5: break;
+            default: printf("Pilihan tidak valid.\n"); pause_screen(); break;
         }
     } while (choice != 5);
 }
@@ -150,19 +121,16 @@ void handleScheduleView() {
             case 2: {
                 int week;
                 printf("\nMasukkan nomor minggu (1-4): ");
-                char week_input[10];
-                fgets(week_input, sizeof(week_input), stdin);
-                if (sscanf(week_input, "%d", &week) != 1 || week < 1 || week > 4) {
-                    printf("Input minggu tidak valid. Pilih antara 1 sampai 4.\n");
+                fgets(input, sizeof(input), stdin);
+                if (sscanf(input, "%d", &week) != 1 || week < 1 || week > 4) {
+                    printf("Input minggu tidak valid.\n");
                     pause_screen();
                     break;
                 }
                 int start_day = (week - 1) * 7 + 1;
                 int end_day = week * 7;
-                if (end_day > MAX_HARI) end_day = MAX_HARI;
-
                 clear_screen();
-                printf("\n--- Jadwal Dokter Minggu %d (Hari %d - %d) ---\n", week, start_day, end_day);
+                printf("\n--- Jadwal Dokter Minggu %d (Hari %d - %d) ---\n", week, start_day, end_day > MAX_HARI ? MAX_HARI : end_day);
                 cetakJadwalRange(start_day, end_day);
                 pause_screen();
                 break;
@@ -170,10 +138,9 @@ void handleScheduleView() {
             case 3: {
                 int day;
                 printf("\nMasukkan nomor hari (1-30): ");
-                char day_input[10];
-                fgets(day_input, sizeof(day_input), stdin);
-                if (sscanf(day_input, "%d", &day) != 1 || day < 1 || day > MAX_HARI) {
-                    printf("Input hari tidak valid. Pilih antara 1 sampai 30.\n");
+                fgets(input, sizeof(input), stdin);
+                if (sscanf(input, "%d", &day) != 1 || day < 1 || day > MAX_HARI) {
+                    printf("Input hari tidak valid.\n");
                     pause_screen();
                     break;
                 }
@@ -183,12 +150,8 @@ void handleScheduleView() {
                 pause_screen();
                 break;
             }
-            case 4:
-                break;
-            default:
-                printf("Pilihan tidak valid. Silakan coba lagi.\n");
-                pause_screen();
-                break;
+            case 4: break;
+            default: printf("Pilihan tidak valid.\n"); pause_screen(); break;
         }
     } while (choice != 4);
 }

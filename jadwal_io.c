@@ -1,16 +1,15 @@
-#include "jadwal.h"
+#include "jadwal_io.h"
+#include "interface.h"
 
-// Fungsi internal, tidak perlu di header
-static int get_max_lines_in_shift_display(int countP, int countS, int countM) {
-    int max = countP;
-    if (countS > max) max = countS;
-    if (countM > max) max = countM;
-    return max > 0 ? max : 1; // Pastikan minimal 1 baris untuk cetak
+static int get_max_lines(int c1, int c2, int c3) {
+    int max = c1 > c2 ? c1 : c2;
+    return max > c3 ? max : c3;
 }
 
 void cetakJadwalRange(int start_day, int end_day) {
-    if (jadwal[0].pagi.kapasitas == 0) { // Cek apakah jadwal sudah di-init
-        printf("Jadwal belum dibuat. Mohon buat jadwal terlebih dahulu.\n");
+    if (jadwal[0].pagi.kapasitas == 0) {
+        printf("Jadwal belum dibuat.\n");
+        pause_screen();
         return;
     }
 
@@ -24,34 +23,34 @@ void cetakJadwalRange(int start_day, int end_day) {
         int countP = jadwal[hari].pagi.jumlah_dokter;
         int countS = jadwal[hari].siang.jumlah_dokter;
         int countM = jadwal[hari].malam.jumlah_dokter;
-        int maxLines = get_max_lines_in_shift_display(countP, countS, countM);
+        int maxLines = get_max_lines(countP, countS, countM);
+        if (maxLines == 0) maxLines = 1;
 
         for (int line = 0; line < maxLines; line++) {
-            printf("| %-4s ", (line == 0) ? " " : "");
-            if(line == 0) printf("\b\b\b\b%d", hari + 1);
-
+            printf("| %-4s ", (line == 0) ? "" : " ");
+            if (line == 0) {
+                char day_str[5];
+                sprintf(day_str, "%d", hari + 1);
+                printf("\b\b\b\b%-4s", day_str);
+            }
 
             char buffer[35];
-
-            // Pagi
             if (line < countP) {
-                snprintf(buffer, sizeof(buffer), "%d. %s", line + 1, jadwal[hari].pagi.dokter_list[line].dokter);
+                snprintf(buffer, sizeof(buffer), "%s", jadwal[hari].pagi.dokter_list[line].dokter);
                 printf("| %-30s ", buffer);
             } else {
                 printf("| %-30s ", "");
             }
 
-            // Siang
             if (line < countS) {
-                snprintf(buffer, sizeof(buffer), "%d. %s", line + 1, jadwal[hari].siang.dokter_list[line].dokter);
+                snprintf(buffer, sizeof(buffer), "%s", jadwal[hari].siang.dokter_list[line].dokter);
                 printf("| %-30s ", buffer);
             } else {
                 printf("| %-30s ", "");
             }
 
-            // Malam
             if (line < countM) {
-                snprintf(buffer, sizeof(buffer), "%d. %s", line + 1, jadwal[hari].malam.dokter_list[line].dokter);
+                snprintf(buffer, sizeof(buffer), "%s", jadwal[hari].malam.dokter_list[line].dokter);
                 printf("| %-30s |\n", buffer);
             } else {
                 printf("| %-30s |\n", "");
@@ -59,14 +58,14 @@ void cetakJadwalRange(int start_day, int end_day) {
         }
         printf("+------+--------------------------------+--------------------------------+--------------------------------+\n");
     }
-    printf("\n");
 }
+
 
 void cetakRingkasanShiftDokter() {
     clear_screen();
     printf("--- Ringkasan Shift Dokter ---\n");
     if (total_dokter == 0) {
-        printf("Tidak ada dokter terdaftar.\n");
+        printf("Tidak ada dokter yang terdaftar.\n");
         pause_screen();
         return;
     }
@@ -76,16 +75,16 @@ void cetakRingkasanShiftDokter() {
         return;
     }
 
-    printf("+--------------------------------+-----------------+-----------------+\n");
-    printf("| Nama Dokter                    | Total Shift     | Total Pelanggaran |\n");
-    printf("+--------------------------------+-----------------+-----------------+\n");
+    printf("+----------------------+-----------------+-----------------+\n");
+    printf("| Nama Dokter          | Total Shift     | Pelanggaran Pref. |\n");
+    printf("+----------------------+-----------------+-----------------+\n");
 
     int total_pelanggaran_global = 0;
     for (int i = 0; i < total_dokter; i++) {
-        printf("| %-30s | %-15d | %-15d |\n", dokter[i].nama, dokter[i].shift_terpakai, dokter[i].pelanggaran);
+        printf("| %-20s | %-15d | %-15d |\n", dokter[i].nama, dokter[i].shift_terpakai, dokter[i].pelanggaran);
         total_pelanggaran_global += dokter[i].pelanggaran;
     }
-    printf("+--------------------------------+-----------------+-----------------+\n");
+    printf("+----------------------+-----------------+-----------------+\n");
     printf("\nTotal Pelanggaran Preferensi Keseluruhan: %d\n", total_pelanggaran_global);
     pause_screen();
 }
@@ -109,21 +108,23 @@ void simpanJadwalKeCSV() {
     fprintf(file, "Hari,Shift Pagi,Shift Siang,Shift Malam\n");
     for (int hari = 0; hari < MAX_HARI; hari++) {
         fprintf(file, "%d,", hari + 1);
+        char shift_pagi_str[MAX_LINE] = "";
+        char shift_siang_str[MAX_LINE] = "";
+        char shift_malam_str[MAX_LINE] = "";
 
         for (int i = 0; i < jadwal[hari].pagi.jumlah_dokter; i++) {
-            fprintf(file, "%s%s", jadwal[hari].pagi.dokter_list[i].dokter, (i == jadwal[hari].pagi.jumlah_dokter - 1) ? "" : "; ");
+            strcat(shift_pagi_str, jadwal[hari].pagi.dokter_list[i].dokter);
+            if (i < jadwal[hari].pagi.jumlah_dokter - 1) strcat(shift_pagi_str, "; ");
         }
-        fprintf(file, ",");
-
         for (int i = 0; i < jadwal[hari].siang.jumlah_dokter; i++) {
-            fprintf(file, "%s%s", jadwal[hari].siang.dokter_list[i].dokter, (i == jadwal[hari].siang.jumlah_dokter - 1) ? "" : "; ");
+            strcat(shift_siang_str, jadwal[hari].siang.dokter_list[i].dokter);
+            if (i < jadwal[hari].siang.jumlah_dokter - 1) strcat(shift_siang_str, "; ");
         }
-        fprintf(file, ",");
-
         for (int i = 0; i < jadwal[hari].malam.jumlah_dokter; i++) {
-            fprintf(file, "%s%s", jadwal[hari].malam.dokter_list[i].dokter, (i == jadwal[hari].malam.jumlah_dokter - 1) ? "" : "; ");
+            strcat(shift_malam_str, jadwal[hari].malam.dokter_list[i].dokter);
+            if (i < jadwal[hari].malam.jumlah_dokter - 1) strcat(shift_malam_str, "; ");
         }
-        fprintf(file, "\n");
+        fprintf(file, "\"%s\",\"%s\",\"%s\"\n", shift_pagi_str, shift_siang_str, shift_malam_str);
     }
 
     fclose(file);

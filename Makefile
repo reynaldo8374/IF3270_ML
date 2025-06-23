@@ -4,61 +4,51 @@ CC = gcc
 # Compiler flags
 CFLAGS = -Wall -Wextra -std=c99 -g
 
-# Daftar file source (.c)
+# Source files
 SRCS = main.c interface.c dokter_handler.c jadwal_generator.c jadwal_io.c
 
-# Daftar file header (.h) untuk dependensi
+# Header files
 HEADERS = definitions.h interface.h dokter_handler.h jadwal_generator.h jadwal_io.h
 
-# Konfigurasi berdasarkan Sistem Operasi (Windows atau lainnya)
+# OS-specific settings
 ifeq ($(OS),Windows_NT)
-    # Pengaturan untuk Windows (cmd.exe atau PowerShell)
     TARGET = jadwal_app.exe
     RM = del /Q
     RUN_CMD = .\\$(TARGET)
 else
-    # Pengaturan untuk Linux, macOS, atau Git Bash/WSL di Windows
     TARGET = jadwal_app
     RM = rm -f
     RUN_CMD = ./$(TARGET)
 endif
 
-# Membuat file object (.o) dari file source (.c)
 OBJS = $(SRCS:.c=.o)
 
-
-# ===================================================================
-# TARGETS (Aturan-aturan untuk 'make')
-# ===================================================================
-
-# Aturan default (dijalankan jika Anda hanya mengetik 'make')
-# Sama dengan 'make all'
+# Default target
 all: $(TARGET)
 
-# Aturan untuk membuat file executable dari file-file object
+# Linking target
 $(TARGET): $(OBJS)
-	@echo "Linking semua object file menjadi -> $@"
+	@echo ">> Linking objects -> $@"
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
-	@echo "Build selesai. Executable '$(TARGET)' siap."
+	@echo ">> Build complete: $(TARGET)"
 
-# Aturan umum untuk membuat file .o dari file .c
-# Ini memberitahu 'make' bahwa setiap file .o bergantung pada file .c-nya
-# dan SEMUA file header. Ini cara aman untuk memastikan kompilasi ulang jika ada header berubah.
+# Compilation target
 %.o: %.c $(HEADERS)
-	@echo "Compiling $< -> $@"
+	@echo ">> Compiling $< -> $@"
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# --- TARGET BARU ANDA ---
-# Aturan untuk menjalankan program
+# Run target
 run: all
-	@echo "--- Menjalankan Program ---"
+	@echo ">> Running application..."
+	@echo "--------------------------"
 	$(RUN_CMD)
-	@echo "--- Program Selesai ---"
+	@echo "--------------------------"
+	@echo ">> Application finished."
 
-# Aturan untuk membersihkan file yang dibuat (object dan executable)
+# Clean target
 clean:
-	@echo "--- Membersihkan Build Files ---"
+	@echo ">> Cleaning build files..."
 	-$(RM) $(OBJS) $(TARGET)
+	@echo ">> Done."
 
-# Memberitahu 'make' bahwa target ini bukan nama file, melainkan perintah
 .PHONY: all clean run

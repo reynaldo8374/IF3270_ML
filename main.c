@@ -1,15 +1,12 @@
-#include "jadwal.h"
+#include "definitions.h"
+#include "interface.h"
+#include "dokter_handler.h"
+#include "jadwal_generator.h"
 
-// ===========================================
 // DEFINISI VARIABEL GLOBAL
-// ===========================================
 Dokter dokter[MAX_DOKTER];
 int total_dokter = 0;
 JadwalHari jadwal[MAX_HARI];
-
-// ===========================================
-// MAIN PROGRAM LOGIC
-// ===========================================
 
 int main() {
     initDokterArray();
